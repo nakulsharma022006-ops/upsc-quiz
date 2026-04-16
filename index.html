@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UPSC Aspirants Quiz 🇮🇳</title>
+
+<style>
+/* SAME DESIGN — NO CHANGE */
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  background-size: 400% 400%;
+  animation: bgAnim 15s infinite alternate ease-in-out;
+  color: #fff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+@keyframes bgAnim {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.card {
+  width: 90%;
+  max-width: 750px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+h1 {
+  text-align: center;
+  color: #ffd700;
+}
+.controls { text-align: center; margin-bottom: 15px; }
+
+.name-section {
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
+  padding: 15px;
+  border-radius: 12px;
+  display: inline-block;
+}
+.name-section input {
+  padding: 10px;
+  border-radius: 8px;
+  width: 250px;
+  text-align: center;
+}
+
+button {
+  background: linear-gradient(135deg, #5a8dee, #546de5);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  color: #fff;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.question {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.option { display:block; margin:6px 0; cursor:pointer; }
+
+.correct { outline: 2px solid #9ae6b4; }
+.wrong { outline: 2px solid #ff6b6b; }
+
+#progressContainer {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+#progressBar {
+  height: 10px;
+  width: 100%;
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+
+<h1>📘 UPSC Aspirants Quiz 🇮🇳</h1>
+
+<div class="controls" id="nameSection">
+  <div class="name-section">
+    <input id="playerName" type="text" placeholder="Enter your name ✨">
+  </div>
+  <br>
+  <button id="startBtn">Start Quiz</button>
+</div>
+
+<div id="welcomeScreen" style="display:none;text-align:center;">
+  <h2 id="welcomeMsg"></h2>
+  <p>Ready to test your General Knowledge for UPSC? 📚</p>
+  <button id="beginQuizBtn">Let's Start</button>
+</div>
+
+<div class="controls" id="quizControls" style="display:none;">
+  <button id="submitBtn">Submit</button>
+  <button id="showAnswersBtn">Show Answers</button>
+  <div id="timer">Timer: --</div>
+  <div id="progressContainer"><div id="progressBar"></div></div>
+</div>
+
+<div id="quizArea"></div>
+
+<div id="resultBox" style="display:none;text-align:center;">
+  <h3>Result</h3>
+  <p id="summary"></p>
+  <button id="restartBtn">Restart</button>
+</div>
+
+</div>
+
+<script>
+
+/* 🔥 UPSC GK QUESTIONS */
+const quizData = [
+{q:"Who is the President of India (2024)?",opts:["Droupadi Murmu","Ram Nath Kovind","Narendra Modi","Amit Shah"],correct:"Droupadi Murmu"},
+{q:"Which is the longest river in India?",opts:["Ganga","Yamuna","Brahmaputra","Godavari"],correct:"Ganga"},
+{q:"Indian संविधान came into force on?",opts:["15 Aug 1947","26 Jan 1950","2 Oct 1948","26 Nov 1949"],correct:"26 Jan 1950"},
+{q:"Capital of Madhya Pradesh?",opts:["Bhopal","Indore","Gwalior","Jabalpur"],correct:"Bhopal"},
+{q:"Who wrote 'Discovery of India'?",opts:["Gandhi","Nehru","Tagore","Ambedkar"],correct:"Nehru"},
+{q:"Largest state by area?",opts:["UP","Maharashtra","Rajasthan","MP"],correct:"Rajasthan"},
+{q:"Which Article gives Right to Equality?",opts:["Article 14","Article 19","Article 21","Article 32"],correct:"Article 14"},
+{q:"First woman PM of India?",opts:["Sarojini Naidu","Indira Gandhi","Pratibha Patil","Sushma Swaraj"],correct:"Indira Gandhi"},
+{q:"NITI Aayog replaced?",opts:["Planning Commission","Finance Commission","Election Commission","UPSC"],correct:"Planning Commission"},
+{q:"Currency of Japan?",opts:["Yuan","Won","Yen","Dollar"],correct:"Yen"}
+];
+
+let timer,timeLeft=90;
+
+const quizArea=document.getElementById("quizArea");
+const startBtn=document.getElementById("startBtn");
+const beginQuizBtn=document.getElementById("beginQuizBtn");
+
+startBtn.onclick=()=>{
+  let name=document.getElementById("playerName").value;
+  if(!name) return alert("Enter name");
+  document.getElementById("nameSection").style.display="none";
+  document.getElementById("welcomeScreen").style.display="block";
+  document.getElementById("welcomeMsg").innerText="Welcome "+name+" 🎯";
+};
+
+beginQuizBtn.onclick=()=>{
+  document.getElementById("welcomeScreen").style.display="none";
+  document.getElementById("quizControls").style.display="block";
+  renderQuiz();
+  startTimer();
+};
+
+function renderQuiz(){
+  quizArea.innerHTML="";
+  quizData.forEach((q,i)=>{
+    let div=document.createElement("div");
+    div.className="question";
+    div.innerHTML=`<b>Q${i+1}. ${q.q}</b>`+
+    q.opts.map(o=>`<label class="option">
+    <input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("");
+    quizArea.appendChild(div);
+  });
+}
+
+function startTimer(){
+  timeLeft=90;
+  timer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("timer").innerText="Timer: "+timeLeft;
+    document.getElementById("progressBar").style.width=(timeLeft/90*100)+"%";
+    if(timeLeft<=0) submitQuiz();
+  },1000);
+}
+
+document.getElementById("submitBtn").onclick=submitQuiz;
+
+function submitQuiz(){
+  clearInterval(timer);
+  let score=0;
+  quizData.forEach((q,i)=>{
+    let ans=document.querySelector(`input[name=q${i}]:checked`);
+    if(ans && ans.value===q.correct) score++;
+  });
+  document.getElementById("resultBox").style.display="block";
+  document.getElementById("summary").innerText=
+    "Score: "+score+" / "+quizData.length;
+}
+
+document.getElementById("showAnswersBtn").onclick=()=>{
+  quizData.forEach((q,i)=>{
+    document.querySelectorAll(`input[name=q${i}]`).forEach(r=>{
+      if(r.value===q.correct) r.parentElement.classList.add("correct");
+    });
+  });
+};
+
+document.getElementById("restartBtn").onclick=()=>location.reload();
+
+</script>
+</body>
+</html>
